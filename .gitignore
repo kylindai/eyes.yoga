@@ -6,6 +6,7 @@
 **/node_modules
 **/ctp-build
 **/build
+**/model
 **/data
 **/core
 **/conf
