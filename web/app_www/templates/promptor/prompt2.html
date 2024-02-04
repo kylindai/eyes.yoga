@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<head>
+    <title>AigcPrompt</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link  href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+    html { padding: 0px 0px; }
+    body { background:#FFF; padding:10px 10px; font-size: 14px; }
+    .my-font { font-size: 14px; }
+    .my-editor { height: 674px; background-color: gray; font-family: menlo, Monaco; line-height: 18px; }
+    .my-result { height: 674px; background-color: gray; }
+    .my-table { border: 0px; border-collapse: separate; border-spacing: 10px; }
+    .my-table td { border: 0px; }
+    .my-panel { height: 320px; width: 240px; border: 0px; }
+    .my-image { height: 320px; width: 240px; }
+    .my-note { color: white; }
+</style>
+
+<body>
+<header></header>
+<main>
+    <div class="container-fluid mt-3 mx-auto">
+        <div class="row mb-3">
+            <div class="col-3">
+                <div class="input-group">
+                    <span class="input-group-text my-font">host</span>
+                    <select class="form-select form-select-sm" id="host" name="host">
+                        <option value="33.155.152.53" selected="selected">33.155.152.53</option>
+                        <option value="33.154.207.61">33.154.207.61</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="input-group">
+                    <span class="input-group-text my-font">port</span>
+                    <input type="text" class="form-control form-control-sm" id="port" name="port" value="7861">
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text my-font">前景图</span>
+                    <input type="text" class="form-control form-control-sm" id="ft_img" name="ft_img" value="https://mdn.alipayobjects.com/huamei_rbepvq/afts/img/A*1k_3TqH3XvIAAAAAAAAAAAAADlrLAQ/original">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text my-font">背景图</span>
+                    <input type="text" class="form-control form-control-sm" id="bg_img" name="bg_img" value="https://mdn.alipayobjects.com/huamei_rbepvq/afts/img/A*JV46RamBZi0AAAAAAAAAAAAADlrLAQ/original">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+                <div class="col-4">
+                    <label class="form-label">参数:</label>
+                    <div class="my-editor" id="config_editor"></div>
+                </div>
+                <div class="col">
+                    <label class="form-label">效果:</label>
+                    <div class="my-result" id="result_image">
+                        <table class="my-table" cellspacing="10">
+                            <tr>
+                                <td valign="top" class="my-panel" image_id="" id="ft_image"></td>
+                                <td valign="top" class="my-panel" image_id="" id="bg_image"></td>
+                                <td valign="top" class="my-panel" image_id=""></td>
+                            </tr>
+                            <tr>
+                                <td valign="top" class="my-panel" image_id="" id="mask_image"></td>
+                                <td valign="top" class="my-panel" image_id="" id="inpaint_image"></td>
+                                <td valign="top" class="my-panel" image_id="" id="style_image"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button type="button" id="format_btn" class="btn btn-primary my-2 my-font">格式化参数</button>
+                    <button type="button" id="step1_submit_btn" class="btn btn-primary my-2 my-font">1. 生成蒙板</button>
+                    <button type="button" id="step2_submit_btn" class="btn btn-primary my-2 my-font">2. 合成背景</button>
+                    <button type="button" id="step3_submit_btn" class="btn btn-primary my-2 my-font">3. 变换风格</button>
+                </div>
+        </div>
+    </div>
+</main>
+<footer></footer>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/monaco-editor/0.43.0/min/vs/loader.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+        require.config({ paths: { 'vs': 'https://cdn.bootcdn.net/ajax/libs/monaco-editor/0.43.0/min/vs' } });
+
+        const editor_init = (panel_id, language, code) => {
+            return new Promise((resolve, reject) => {
+                require(['vs/editor/editor.main'], () => {
+                    // create editor
+                    const new_editor = (panel_id, language, code) => {
+                        let editor = monaco.editor.create(document.getElementById(panel_id), {
+                            value: code,
+                            language: language,
+                            theme: 'vs-dark',
+                            wordWrap: "on",
+                            wordWrapColumn: 50,
+                            renderLineHighlight: 'gutter',
+                            scrollBeyondLastLine: false,
+                            minimap: {
+                                enabled: false
+                            },
+                        });
+                        // format
+                        editor_format_code(editor);
+                        return editor;
+                    }
+                    // resolve
+                    resolve(new_editor(panel_id, language, code));
+                });
+            });
+        }
+
+        const editor_format_code = (editor) => {
+            editor.getAction('editor.action.formatDocument').run();
+            editor.setValue(editor.getValue());
+        }        
+
+        // call maya service
+        const invoke_maya_service = (step, panel_id, param) => {
+            $('#' + panel_id).attr('image_id', '');
+            $('#' + panel_id).empty().append('<span class="my-note">正在生成图片...</span>');
+            let host = $('#host').val();
+            let port = $('#port').val();
+            alert(host);
+            $.ajax({
+                url: 'cgi-bin/call_maya',
+                type: 'GET',
+                data: {
+                    step: step,
+                    host: host,
+                    port: port,
+                    param: param
+                },
+                dataType: 'json',
+                success: (result) => {
+                    if (result == undefined || result.errorCode == undefined) {
+                        $('#' + panel_id).empty().append('<span class="my-note">网络错误, 请稍后重试, 或联系技术同学!</span>');
+                        return;
+                    }
+                    if (result.errorCode != 0) {
+                        let html = []
+                        html.push('<span class="my-note">服务端错误, 请稍后重试, 或联系技术同学!</span><br/>');
+                        html.push('<span class="my-note">' + result.errorDesc + '</span>');
+                        $('#' + panel_id).empty().append(html.join(''));
+                        return;
+                    }
+                    let image = result.result.callMaya.imageData;
+                    if (image == 'null' || image == 'ERROR' || image == undefined) {
+                        $('#' + panel_id).empty().append('<span class="my-note">生成图片失败, 请稍后重试, 或联系技术同学!</span>');
+                        return;
+                    }
+                    let html = [];
+                    html.push('<img src="data:image/jpeg;base64,' + image + '" class="my-image">');
+                    $('#' + panel_id).attr("image_id", result.result.callMaya.sessionId);
+                    $('#' + panel_id).empty().append(html.join(''));
+                },
+                complete: () => {
+                },
+                error: (XMLHttpRequest, textStatus, errorThrown) => {
+                    $('#' + panel_id).attr('image_id', '');
+                    $('#' + panel_id).empty().append('<span class="my-note">网络错误, 请稍后重试, 或联系技术同学!</span>');
+                }
+            });
+        }
+
+        let config_json = [
+            '{',
+            '"mask_service": {',
+            '    "service":"intl_davinci_maya_sg4",',
+            '    "version":"rembg_v1"',
+            '},',
+            '"mask_params": {',
+            '    "image": "{前景图}",',
+            '    "model": "u2net",',
+            '    "return_mask": "true"',
+            '},',
+            '"inpaint_service": {',
+            '    "service":"intl_davinci_maya_sg4",',
+            '    "version":"sd_x2img_v1"',
+            '},',
+            '"inpaint_params": {',
+            '    "method":"inpainting_controlnet",',
+            
+            '    "prompt":"Mount Fuji,mount fuji,cherry blossoms,scenery,outdoors,sky,tree,mount fuji,blue sky,day,landscape",',
+            '    "negative_prompt":"",',
+            '    "batch_size":"1",',
+            '    "width":"480",',
+            '    "height":"640",',
+            '    "steps":"20",',
+            '    "cfg_scale":"7.0",',
+            '    "lora_model_id":"",',
+            '    "lora_weight":"0.0",',
+            '    "seed":"-1",',
+
+            '    "image":"{前景图}",',
+            '    "denoising_strength":"0.75",',
+            '    "resize_mode":"0",',
+
+            '    "mask_image":"{前景蒙板图}",',
+            '    "mask_invert":"true",',
+            '    "mask_blur":"4",',
+            '    "inpainting_fill":"1",',
+
+            '    "control_image":"{背景图}",',
+            '    "control_type":"tile/blur",',
+            '    "control_weight":"1.0",',
+            '    "control_start_step":"0.0",',
+            '    "control_end_step":"1.0",',
+            '    "control_preprocessor_module":"",',
+            '    "control_pixel_perfect":"false",',
+            '    "control_preprocessor_resolution":"512",',
+            '    "control_resize_mode":"0",',
+            '    "control_threshold_a":"",',
+            '    "control_threshold_b":""',
+            '},',
+            '"style_service": {',
+            '    "service":"intl_davinci_maya_sg4",',
+            '    "version":"sd_x2img_toonyoudif_v1"',
+            '},',
+            '"style_params": {',
+            '    "method":"img2img_controlnet",',
+            
+            '    "prompt":"",',
+            '    "negative_prompt":"",',
+            '    "batch_size":"1",',
+            '    "width":"480",',
+            '    "height":"640",',
+            '    "steps":"20",',
+            '    "cfg_scale":"7.0",',
+            '    "lora_model_id":"animeScreencapStyle_v230epochs",',
+            '    "lora_weight":"0.0",',
+            '    "seed":"-1",',
+
+            '    "image":"{合成背景图}",',
+            '    "denoising_strength":"0.75",',
+            '    "resize_mode":"0",',
+
+            '    "control_type":"canny",',
+            '    "control_weight":"1.0",',
+            '    "control_start_step":"0.0",',
+            '    "control_end_step":"1.0",',
+            '    "control_preprocessor_module":"",',
+            '    "control_pixel_perfect":"false",',
+            '    "control_preprocessor_resolution":"512",',
+            '    "control_resize_mode":"0",',
+            '    "control_threshold_a":"",',
+            '    "control_threshold_b":""',
+            '}',
+            '}'
+        ];
+
+        $(document).ready(() => {
+
+            // editor init
+            let editor = editor_init('config_editor', 'json', config_json.join('\n'));
+
+            // editor beautify
+            $('#format_btn').click((e) => {
+                editor.then(e => {
+                    editor_format_code(e);
+                });
+            });
+
+            $('#step1_submit_btn').click((e) => {
+                let ft_img = $('#ft_img').val();
+                if (ft_img.length == 0) {
+                    alert('请输入前景图地址');
+                    return;
+                }
+                // display front image
+                $('#ft_image').empty().append('<img src="' + ft_img + '" class="my-image">');
+                editor.then(e => {
+                    // invoke maya service
+                    let param = e.getValue();
+                    param = param.replaceAll('{前景图}', ft_img);
+                    invoke_maya_service('mask', 'mask_image', param);
+                });
+            });
+            $('#step2_submit_btn').click((e) => {
+                let mask_image_id = $('#mask_image').attr('image_id');
+                if (mask_image_id == 0) {
+                    alert('请先生成前景蒙板图');
+                    return;
+                }
+                let ft_img = $('#ft_img').val();
+                let bg_img = $('#bg_img').val();
+                if (bg_img.length == 0) {
+                    alert('请输入背景图地址');
+                    return;
+                }
+                // display front image
+                $('#bg_image').empty().append('<img src="' + bg_img + '" class="my-image">');
+                editor.then(e => {
+                    let param = e.getValue();
+                    param = param.replaceAll('{前景图}', ft_img);
+                    param = param.replaceAll('{背景图}', bg_img);
+                    param = param.replaceAll('{前景蒙板图}', mask_image_id);
+                    invoke_maya_service('inpaint', 'inpaint_image', param);
+                });
+            });
+            $('#step3_submit_btn').click((e) => {
+                let inpaint_image_id = $('#inpaint_image').attr('image_id');
+                if (inpaint_image_id == 0) {
+                    alert('请先生成合成背景图');
+                    return;
+                }
+                editor.then(e => {
+                    let param = e.getValue();
+                    param = param.replaceAll('{合成背景图}', inpaint_image_id);
+                    invoke_maya_service('style', 'style_image', param);
+                });
+            });
+
+        })
+    </script>
+
+</body>

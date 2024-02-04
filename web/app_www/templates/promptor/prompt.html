@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<head>
+    <title>AigcPrompt</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link  href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+    body { background:#FFF; padding:10px 10px; font-size: 14px; }
+    .my-font { font-size: 14px; }
+    .my-editor { height: 500px; background-color: gray; font-family: menlo, Monaco; line-height: 18px; }
+    .my-result { height: 500px; background-color: gray; padding: 10px 10px; }
+    .my-image { height: 480px; float: left; padding-right: 10px; }
+    .my-note { color: white; }
+</style>
+
+<body>
+<header></header>
+<main>
+    <div class="container-fluid mt-3 mx-auto">
+        <div class="row mb-3">
+            <div class="col-3">
+                <div class="input-group">
+                    <span class="input-group-text my-font">host</span>
+                    <input type="text" class="form-control form-control-sm" id="host" name="host" value="33.134.120.191">
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="input-group">
+                    <span class="input-group-text my-font">port</span>
+                    <input type="text" class="form-control form-control-sm" id="port" name="port" value="7861">
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text my-font">前景图</span>
+                    <input type="text" class="form-control form-control-sm" id="ft_img" name="ft_img" value="https://mdn.alipayobjects.com/huamei_rbepvq/afts/img/A*1k_3TqH3XvIAAAAAAAAAAAAADlrLAQ/original">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text my-font">背景图</span>
+                    <input type="text" class="form-control form-control-sm" id="bg_img" name="bg_img" value="https://mdn.alipayobjects.com/huamei_rbepvq/afts/img/A*JV46RamBZi0AAAAAAAAAAAAADlrLAQ/original">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link my-font active" data-bs-toggle="tab" href="#tab1">1. 前景图蒙板</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link my-font" data-bs-toggle="tab" href="#tab2">2. 前景图换背景</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link my-font" data-bs-toggle="tab" href="#tab3">3. 换风格</a>
+                    </li>
+                </ul>
+                <div class="tab-content mt-2">
+                    <div class="tab-pane show active" id="tab1">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">参数:</label>
+                                <div class="my-editor" id="tab1_config_editor"></div>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">效果:</label>
+                                <div class="my-result" id="tab1_img_result"></div>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="button" id="tab1_format_btn" class="btn btn-primary my-2 my-font">格式化</button>
+                            <button type="button" id="tab1_submit_btn" class="btn btn-primary my-2 my-font">提交</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab2">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">参数:</label>
+                                <div class="my-editor" id="tab2_config_editor"></div>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">效果:</label>
+                                <div class="my-result" id="tab2_img_result"></div>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="button" id="tab2_format_btn" class="btn btn-primary my-2 my-font">格式化</button>
+                            <button type="button" id="tab2_submit_btn" class="btn btn-primary my-2 my-font">提交</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab3">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">参数:</label>
+                                <div class="my-editor" id="tab3_config_editor"></div>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">效果:</label>
+                                <div class="my-result" id="tab3_img_result"></div>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="button" id="tab3_format_btn" class="btn btn-primary my-2 my-font">格式化</button>
+                            <button type="button" id="tab3_submit_btn" class="btn btn-primary my-2 my-font">提交</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer></footer>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/monaco-editor/0.43.0/min/vs/loader.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+        require.config({ paths: { 'vs': 'https://cdn.bootcdn.net/ajax/libs/monaco-editor/0.43.0/min/vs' } });
+
+        const editor_init = (panel_id, language, code) => {
+            return new Promise((resolve, reject) => {
+                require(['vs/editor/editor.main'], () => {
+                    // create editor
+                    const new_editor = (panel_id, language, code) => {
+                        let editor = monaco.editor.create(document.getElementById(panel_id), {
+                            value: code,
+                            language: language,
+                            theme: 'vs-dark',
+                            wordWrap: "on",
+                            wordWrapColumn: 50,
+                            renderLineHighlight: 'gutter',
+                            scrollBeyondLastLine: false,
+                            minimap: {
+                                enabled: false
+                            },
+                        });
+                        // format
+                        editor_format_code(editor);
+                        return editor;
+                    }
+                    // resolve
+                    resolve(new_editor(panel_id, language, code));
+                });
+            });
+        }
+
+        const editor_format_code = (editor) => {
+            editor.getAction('editor.action.formatDocument').run();
+            editor.setValue(editor.getValue());
+        }        
+
+        // call maya service
+        const invoke_maya_service = (panel_id, param) => {
+            // alert(param);
+            $('#' + panel_id).empty().append('<span class="my-note">正在生成图片...</span>');
+            let host = $('#host').val();
+            let port = $('#port').val();
+            $.ajax({
+                url: 'cgi-bin/call_maya',
+                type: 'GET',
+                data: {
+                    host: host,
+                    port: port,
+                    param: param
+                },
+                dataType: 'json',
+                success: (result) => {
+                    if (result == undefined || result.errorCode == undefined) {
+                        $('#' + panel_id).empty().append('<span class="my-note">网络错误, 请稍后重试, 或联系技术同学!</span>');
+                        return;
+                    }
+                    if (result.errorCode != 0) {
+                        let html = []
+                        html.push('<span class="my-note">服务端错误, 请稍后重试, 或联系技术同学!</span><br/>');
+                        html.push('<span class="my-note">' + result.errorDesc + '</span>');
+                        $('#' + panel_id).empty().append(html.join(''));
+                        return;
+                    }
+                    let image = result.result.callMaya.resultImage;
+                    if (image == 'null' || image == 'ERROR' || image == undefined) {
+                        $('#' + panel_id).empty().append('<span class="my-note">生成图片失败, 请稍后重试, 或联系技术同学!</span>');
+                        return;
+                    }
+                    let img_src = $('#ft_img').val();
+                    if (!panel_id.startsWith('tab1')) {
+                        img_src = $('#bg_img').val();
+                    }
+                    let html = [];
+                    html.push('<img src="' + img_src + '" class="my-image">');
+                    html.push('<img src="data:image/jpeg;base64,' + image + '" class="my-image">');
+                    $('#' + panel_id).empty().append(html.join(''));
+                },
+                complete: () => {},
+                error: (XMLHttpRequest, textStatus, errorThrown) => {
+                    $('#' + panel_id).empty().append('<span class="my-note">网络错误, 请稍后重试, 或联系技术同学!</span>');
+                }
+            });
+        }
+
+        let config1_json = [
+            '{',
+            '"name": "mask",',
+            '"mask_service": {',
+            '    "service":"intl_davinci_maya_sg4",',
+            '    "version":"rembg_v1"',
+            '},',
+            '"mask_params": {',
+            '    "image": "{前景图}",',
+            '    "model": "u2net",',
+            '    "return_mask": "true"',
+            '}',
+            '}'
+        ];
+
+        let config2_json = [
+            '{',
+            '"name": "mask_inpaint",',
+            '"mask_service": {',
+            '    "service":"intl_davinci_maya_sg4",',
+            '    "version":"rembg_v1"',
+            '},',
+            '"mask_params": {',
+            '    "image": "{前景图}",',
+            '    "model": "u2net",',
+            '    "return_mask": "true"',
+            '},',
+            '"inpaint_service": {',
+            '    "service":"intl_davinci_maya_sg1",',
+            '    "version":"sd_x2img_25D_v1"',
+            '},',
+            '"inpaint_params": {',
+            '    "method":"inpainting",',
+            
+            '    "prompt":"beautiful",',
+            '    "negative_prompt":"",',
+            '    "batch_size":"1",',
+            '    "width":"480",',
+            '    "height":"640",',
+            '    "steps":"20",',
+            '    "cfg_scale":"7.0",',
+            '    "lora_weight":"0.0",',
+            '    "seed":"-1",',
+
+            '    "image":"{前景图}",',
+            '    "denoising_strength":"0.75",',
+            '    "resize_mode":"0",',
+
+            '    "mask_image":"{前景蒙板图}",',
+            '    "mask_invert":"true",',
+            '    "mask_blur":"4",',
+            '    "inpainting_fill":"1",',
+
+            '    "control_image":"{背景图}",',
+            '    "control_type":"canny",',
+            '    "control_weight":"1.0",',
+            '    "control_start_step":"0.0",',
+            '    "control_end_step":"1.0",',
+            '    "control_preprocessor_module":"",',
+            '    "control_pixel_perfect":"false",',
+            '    "control_preprocessor_resolution":"512",',
+            '    "control_resize_mode":"0",',
+            '    "control_threshold_a":"",',
+            '    "control_threshold_b":""',
+            '}',
+            '}'
+        ];
+
+        let config3_json = [
+            '{',
+            '"name": "style",',
+            '"service":"intl_davinci_maya_sg4",',
+            '"version":"sd_x2img_v1",',
+
+            '"method":"inpainting",',
+            
+            '"prompt":"beautiful",',
+            '"negative_prompt":"",',
+            '"batch_size":"1",',
+            '"height":"512",',
+            '"width":"512",',
+            '"steps":"20",',
+            '"cfg_scale":"7.0",',
+            '"lora_weight":"0.0",',
+            '"seed":"-1",',
+
+            '"image":"{前景图}",',
+            '"denoising_strength":"0.75",',
+            '"resize_mode":"0",',
+
+            '"mask_image":"{前景蒙板图}",',
+            '"mask_invert":"false",',
+            '"mask_blur":"4",',
+            '"inpainting_fill":"1",',
+
+            '"control_image":"{背景图}",',
+            '"control_type":"canny",',
+            '"control_weight":"1.0",',
+            '"control_start_step":"0.0",',
+            '"control_end_step":"1.0",',
+            '"control_preprocessor_module":"",',
+            '"control_pixel_perfect":"false",',
+            '"control_preprocessor_resolution":"512",',
+            '"control_resize_mode":"0",',
+            '"control_threshold_a":"",',
+            '"control_threshold_b":""',
+            '}'
+        ];
+
+        $(document).ready(() => {
+            // alert("let's go!");
+
+            let editor1 = editor_init('tab1_config_editor', 'json', config1_json.join('\n'));
+            let editor2 = editor_init('tab2_config_editor', 'json', config2_json.join('\n'));
+            let editor3 = editor_init('tab3_config_editor', 'json', config3_json.join('\n'));
+
+            document.addEventListener('show.bs.tab', (e) => {
+                editor1.then(e => {
+                    e.layout();
+                });
+                editor2.then(e => {
+                    e.layout();
+                });
+                editor3.then(e => {
+                    e.layout();
+                });
+            });
+
+            // editor beautify
+            $('#tab1_format_btn').click((e) => {
+                editor1.then(e => {
+                    editor_format_code(e);
+                });
+            });
+            $('#tab2_format_btn').click((e) => {
+                editor2.then(e => {
+                    editor_format_code(e);
+                });
+            });
+            $('#tab3_format_btn').click((e) => {
+                editor3.then(e => {
+                    editor_format_code(e);
+                });
+            });
+
+            $('#tab1_submit_btn').click((e) => {
+                let ft_img = $('#ft_img').val();
+                if (ft_img.length == 0) {
+                    alert('请输入前景图地址');
+                    return;
+                }
+                editor1.then(e => {
+                    let param = e.getValue();
+                    param = param.replace('{前景图}', ft_img);
+                    invoke_maya_service('tab1_img_result', param);
+                });
+            });
+            $('#tab2_submit_btn').click((e) => {
+                let ft_img = $('#ft_img').val();
+                if (ft_img.length == 0) {
+                    alert('请输入前景图地址');
+                    return;
+                }
+                let bg_img = $('#bg_img').val();
+                if (bg_img.length == 0) {
+                    alert('请输入背景图地址');
+                    return;
+                }
+                editor2.then(e => {
+                    let param = e.getValue();
+                    param = param.replace('{前景图}', ft_img);
+                    param = param.replace('{背景图}', bg_img);
+                    invoke_maya_service('tab2_img_result', param);
+                });
+            });
+            $('#tab3_submit_btn').click((e) => {
+                editor3.then(e => {
+                    alert('good tab3');
+                });
+            });
+
+        })
+    </script>
+
+</body>

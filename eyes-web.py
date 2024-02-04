@@ -29,9 +29,10 @@ def run_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_www":
         try:
-            run_app_www("0.0.0.0", 8080)
+            run_app_www("0.0.0.0", 9090)
         except Exception as e:
             logger.error(e)
+            print(traceback.format_exc())
     else:
         LOG_IMPORTANT(f"WebApp: {app_name} is Unknown !")
 
@@ -40,9 +41,10 @@ def run_wsgi_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_www":
         try:
-            run_wsig_app_www("0.0.0.0", 8080)
+            run_wsig_app_www("0.0.0.0", 9090)
         except Exception as e:
             logger.error(e)
+            print(traceback.format_exc())
     else:
         LOG_IMPORTANT(f"WebApp: {app_name} is Unknown !")
 

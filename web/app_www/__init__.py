@@ -8,9 +8,10 @@ from flask import Flask, app, session, request, render_template
 from flask_login import login_required, current_user
 
 from comm import LOG_KV, LOG_IMPORTANT
+from web.work.comm import auth, db, scheduler, login_manager
 
 APP_VERSION = '1.0.0'
-APP_COPYRIGHT = '2024.01'
+APP_COPYRIGHT = '2024.02'
 APP_AUTHOR = 'eyes.yoga@outlook.com'
 
 
