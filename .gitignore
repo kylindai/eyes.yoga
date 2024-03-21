@@ -4,7 +4,6 @@
 **/.mypy_cache
 **/.vscode
 **/node_modules
-**/ctp-build
 **/build
 **/model
 **/data

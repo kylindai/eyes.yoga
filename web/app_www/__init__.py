@@ -9,10 +9,11 @@ from flask_login import login_required, current_user
 
 from comm import LOG_KV, LOG_IMPORTANT
 from web.work.comm import auth, db, scheduler, login_manager
+from web.app_www.work.bp import avatar
 
 APP_VERSION = '1.0.0'
-APP_COPYRIGHT = '2024.02'
-APP_AUTHOR = 'eyes.yoga@outlook.com'
+APP_COPYRIGHT = '2024.03'
+APP_AUTHOR = 'eyes.yoga@hotmail.com'
 
 
 def create_app(config_file: str = None):
@@ -62,11 +63,10 @@ def create_app(config_file: str = None):
 
     # home index
     app.add_url_rule('/', endpoint='index', view_func=index)
-    app.add_url_rule('/avatar', endpoint='avatar', view_func=avatar)
     app.add_url_rule('/prompt', endpoint='prompt', view_func=prompt)
 
     # blueprint
-    # app.register_blueprint(user.bp)
+    app.register_blueprint(avatar.bp)
 
     # scheduler
     # app.config |= job_config
@@ -113,10 +113,6 @@ def app_about():
 
 def index():
     return render_template("index.html", about=app_about())
-
-
-def avatar():
-    return render_template("avatar/avatar.html")
 
 
 def prompt():

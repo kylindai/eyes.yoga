@@ -65,15 +65,15 @@ def LOG_KV(key, value):
 
 
 class LogLevel(Enum):
-    IGNORE = ('IGR', 0)
-    TRACE = ('TRC', 1)
-    DEBUG = ('DBG', 2)
-    INFO = ('INF', 3)
-    CARE = ('CRE', 4)
-    WARN = ('WRN', 5)
-    ALERT = ('ALT', 6)
-    ERROR = ('ERR', 7)
-    FATAL = ('FTL', 8)
+    IGNORE = ('IGR', 0, ANSI_WEAKEN)
+    TRACE = ('TRC', 1, ANSI_BLUE)
+    DEBUG = ('DBG', 2, ANSI_GREEN)
+    INFO = ('INF', 3, ANSI_WHITE)
+    CARE = ('CRE', 4, ANSI_LIGHT_CYAN)
+    WARN = ('WRN', 5, ANSI_YELLOW)
+    ALERT = ('ALT', 6, ANSI_LIGHT_PINK)
+    ERROR = ('ERR', 7, ANSI_RED)
+    FATAL = ('FTL', 8, ANSI_RED)
 
 
 class LogHandler(logging.Handler):
@@ -121,26 +121,7 @@ class ConsoleLogHandler(LogHandler):
 
         @staticmethod
         def do_format(name: str, log_level: LogLevel, message: str) -> str:
-            color = ''
-            match log_level:
-                case LogLevel.IGNORE:
-                    color = ANSI_WEAKEN
-                case LogLevel.TRACE:
-                    color = ANSI_BLUE
-                case LogLevel.DEBUG:
-                    color = ANSI_GREEN
-                case LogLevel.INFO:
-                    color = ANSI_WHITE
-                case LogLevel.CARE:
-                    color = ANSI_LIGHT_CYAN
-                case LogLevel.WARN:
-                    color = ANSI_YELLOW
-                case LogLevel.ALERT:
-                    color = ANSI_LIGHT_PINK
-                case LogLevel.ERROR:
-                    color = ANSI_RED
-                case LogLevel.FATAL:
-                    color = ANSI_RED
+            color = log_level.value[2]
             level = log_level.value[0]
             return f"{datetime.now()}: {color}[{level}] {name}: {message}{ANSI_REMOVE_COLOR}"
 
