@@ -25,3 +25,8 @@ def avatar():
 @bp.route('/avatar/test', methods=['GET'])
 def avatar_test():
     return render_template('avatar/test.html')
+
+
+@bp.route('/avatar/greeter', methods=['GET'])
+def avatar_greeter():
+    return render_template('avatar/greeter.html')

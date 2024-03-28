@@ -26,8 +26,6 @@ instance/
 .coverage
 htmlcov/
 
-**/strategy_dev
-
 dist/
 build/
 *.egg-info/
@@ -38,3 +36,5 @@ build/
 *.so
 *.o
 
+*package-lock.json
+*package.json
