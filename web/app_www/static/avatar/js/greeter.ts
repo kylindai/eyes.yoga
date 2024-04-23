@@ -1,3 +1,6 @@
+// tsc greeter.ts -> greeter.js
+// rollup
+
 class Student {
     fullName: string;
     constructor(

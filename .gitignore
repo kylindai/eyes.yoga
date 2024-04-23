@@ -37,4 +37,3 @@ build/
 *.o
 
 **/package-lock.json
-**/package.json

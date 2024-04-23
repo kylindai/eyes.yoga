@@ -1,0 +1,169 @@
+from aistudio_common.utils.notebook_utils import NotebookUtils
+from aistudio_common.utils import env_utils
+from aistudio_notebook.utils.notebook_extension_util import topai, get_targets, get_args
+from aistudio_common.utils import log_utils
+import json
+import os
+import requests
+
+# 下载训练模型的代码
+# TODO：将该git仓库发布为一个python库，直接安装python库
+!git clone --depth 1 https://git:PFVtmMWWPOyHCH4dB8vX@code.alipay.com/ILLM_PLATFORM/llm_finetune.git 
+
+o = env_utils.get_odps_instance()
+args = get_args()
+targets = get_targets()
+
+/root/miniconda3/lib/python3.10/site-packages/odps/config.py:66: UserWarning: Option log_view_host has been replaced by logview_host and might be removed in a future release.
+  warnings.warn(self._warn)
+
+git_repo = "https://git:PFVtmMWWPOyHCH4dB8vX@code.alipay.com/{}/{}.git".format(params.get('git_group'), params.get('git_project'))
+git_branch = params.get('git_branch')
+
+# 准备数据集
+dataset_dir = "/ossfs/workspace/data"
+if not os.path.exists(dataset_dir):
+    os.makedirs(dataset_dir)
+
+dataset_ids = []
+for dataset_id, dataset_info in params.get('dataset').items():
+    url = dataset_info.get('url')
+    file_name = dataset_info.get('file_name')
+    # download file
+    response = requests.get(url) 
+    tmp_file = os.path.join(dataset_dir, 'temp.txt')
+    with open(tmp_file, 'wb') as f:
+        f.write(response.content)
+    # reformat data for training
+    datas = []
+    with open(tmp_file, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            data = json.loads(line.strip())
+            if 'instruction' not in data.keys():
+                data['instruction']= ""
+            if 'history' not in data.keys():
+                data['history']= []
+            datas.append(data)
+    os.remove(tmp_file)
+    with open(os.path.join(dataset_dir, file_name), 'w', encoding='utf-8') as f:
+        json.dump(datas, f, ensure_ascii=False, indent=4)
+    dataset_ids.append(dataset_id)
+    #columns
+    columns = dataset_info.get('columns')
+    if 'instruction' not in columns.keys():
+        columns['prompt'] = 'instruction'
+        columns['history'] = 'history'
+        dataset_info['columns'] = columns
+
+# write dataset info at dataset_info.json
+with open(os.path.join(dataset_dir, 'dataset_info.json'), 'w', encoding='utf-8') as f:
+    dataset_info = params.get('dataset')
+    json.dump(dataset_info, f, ensure_ascii=False, indent=4)
+
+params.get('dataset')
+
+{'3927141168047863854': {'file_name': 'alpaca_data_zh_51k.json',
+  'columns': {'response': 'output',
+   'query': 'input',
+   'prompt': 'instruction',
+   'history': 'history'},
+  'url': 'http://afshttp-pool.sg52.alipay.com:8080/getObject?bucketName=ipay-idatahub-file&path=20231106/183937/1699263095991/49584e6cb63804c96c412bd959d159aa&signature=m97CZ8K0utzOOdnX24q4tAbPgkE=&accessKeyId=NOT_NEED'}}
+
+# !wget http://dmsint.cn-hangzhou.alipay.aliyun-inc.com/aistudio/huggingface/max/max_datasets.sh && sh max_datasets.sh 
+split_ratio = params.get('split')
+split_ratio = [ratio / 100 for ratio in split_ratio]
+
+from transformers import AutoConfig
+config = AutoConfig.from_pretrained('Qwen-1_8B-Chat', trust_remote_code=True)
+
+template = 'default'
+
+if config.architectures[0] == 'QWenLMHeadModel':
+    template = 'chatml'
+elif config.architectures[0] == 'BaichuanForCausalLM':
+    template = 'baichuan2'
+elif config.architectures[0] == 'LlamaForCausalLM':
+    template = 'llama2'
+else:
+    template = "default"
+
+run_args = dict(
+    stage='sft',
+    model_name_or_path=params.get('git_project'),
+    dataset_dir=dataset_dir,
+    dataset=",".join(dataset_ids),
+    template=template,
+    do_train=True,
+    finetuning_type="lora",
+    lora_target="c_attn,c_proj,w1,w2",
+    output_dir="model_checkpoint",
+    overwrite_cache=True,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    lr_scheduler_type="cosine",
+    logging_steps=10,
+    save_steps=100,
+    eval_steps=100,
+    save_strategy="steps",
+    evaluation_strategy="steps",
+    learning_rate=5e-5,
+    num_train_epochs=0.1,
+    save_total_limit=5,
+    plot_loss=True,
+    fp16=True,
+    load_best_model_at_end=True,
+    val_size=0.2,
+    overwrite_output_dir=True
+)
+
+from llm_finetune.tune import run_exp
+
+os.environ["WANDB_DISABLED"] = "true"
+run_exp(run_args)
+
+from llm_finetune.tune import export_model
+export_args = dict(
+    model_name_or_path=params.get('git_project'),
+    template="chatml",
+    finetuning_type="lora",
+    checkpoint_dir="model_checkpoint",
+    export_dir=params.get('iteration_version')
+)
+export_model(export_args)
+
+!tar -cvf {iteration_version}.tar {iteration_version}
+1000000_V1/
+1000000_V1/config.json
+1000000_V1/configuration_qwen.py
+1000000_V1/cpp_kernels.py
+1000000_V1/generation_config.json
+1000000_V1/model-00001-of-00002.safetensors
+1000000_V1/model-00002-of-00002.safetensors
+1000000_V1/model.safetensors.index.json
+1000000_V1/modeling_qwen.py
+1000000_V1/qwen.tiktoken
+1000000_V1/qwen_generation_utils.py
+1000000_V1/special_tokens_map.json
+1000000_V1/tokenization_qwen.py
+1000000_V1/tokenizer_config.json
+
+from aistudio_common.utils import model_utils
+
+oss_path = model_utils.upload_model_to_ais(local_path="{}.tar".format(iteration_version), dst_store_key="ILLM_PLATFORM/{}.tar".format(iteration_version), enable_overwrite=False, show_progress=True)
+with open(os.path.join(params.get('git_project'), 'model.json'), 'w', encoding='utf-8') as f:
+    json.dump({"oss_path": oss_path}, f, ensure_ascii=False)
+
+!du -sh *
+3.5G	1000000_V1.tar
+8.0K	git_clone.py
+0	init_env.sh
+1.2M	llm_finetune
+4.0K	max_datasets.sh
+4.0K	max_datasets.sh.1
+188M	model_checkpoint
+180K	notebook_38166426.ipynb
+6.9G	Qwen-1_8B-Chat
+
+
+
+{'p': '{"split":[70,20,10],"git_group":"ILLM_PLATFORM","finetuning_type":"lora","git_project":"Qwen-1_8B-Chat","iteration_version":"1000000_V1","git_branch":"master","model_id":216175075452096923,"dataset":{"3927141168047863854":{"file_name":"alpaca_data_zh_51k.json","columns":{"response":"output","query":"input"},"url":"http://afshttp-pool.sg52.alipay.com:8080/getObject?bucketName=ipay-idatahub-file&path=20231106/183937/1699263095991/49584e6cb63804c96c412bd959d159aa&signature=m97CZ8K0utzOOdnX24q4tAbPgkE=&accessKeyId=NOT_NEED"}}}'}
