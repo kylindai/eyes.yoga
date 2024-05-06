@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import urllib.parse
 
 from typing import Dict, List, Tuple
@@ -10,6 +11,7 @@ from flask import (
     render_template, send_from_directory, redirect, url_for
 )
 from flask_login import UserMixin, login_user, logout_user, login_required
+from flask_sse import sse
 
 from comm import Logger, LOG_IMPORTANT, LOG_KV, LOG_ERROR
 
@@ -34,8 +36,22 @@ def avatar_greeter():
     return render_template('avatar/greeter.html')
 
 
-@bp.route('/avatar/chat', methods=['POST'])
+@bp.route('/avatar/chat', methods=['GET'])
 def avatar_chat():
     result = build_result()
-    return Response(json.dumps(result, indent=4, sort_keys=False, ensure_ascii=False),
-                    mimetype='application/json')
+
+    def generate(t):
+        i = 0
+        while True:
+            yield 'data: {}\n\n'.format(time.time())
+            time.sleep(1)
+            i += 1
+            if i > t:
+                break
+
+    return Response(generate(10), mimetype='text/event-stream')
+ 
+@bp.route('/avatar/message')
+def avatar_message():
+    sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
+    return "Message sent!"

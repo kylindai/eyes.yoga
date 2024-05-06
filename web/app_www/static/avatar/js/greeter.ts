@@ -10,17 +10,17 @@ class Student {
     ) {
       this.fullName = firstName + " " + middleInitial + " " + lastName;
     }
-  }
+}
   
-  interface Person {
+interface Person {
     firstName: string;
     lastName: string;
-  }
+ }
   
-  function greeter(person: Person) {
-    return "Hello, " + person.firstName + " " + person.lastName;
-  }
+function greeter(person: Person) {
+  return "Hello, " + person.firstName + " " + person.lastName;
+}
   
-  let user = new Student("Jane", "M.", "User");
+let user = new Student("Jane", "M.", "User");
   
-  document.body.textContent = greeter(user);
+document.body.textContent = greeter(user);
