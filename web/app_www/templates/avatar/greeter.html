@@ -6,9 +6,12 @@
   </head>
   <body>
     <script src="{{ url_for('static', filename='avatar/js/greeter.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='avatar/js/chat.mjs') }}">
+
+    </script>
     <script type="text/javascript">
-      const chat_event = new EventSource('/avatar/chat');
-      let count = 0;
+
+      /*
       chat_event.onmessage = (event) => {
         const event_data = JSON.parse(event.data);
         console.log(event_data);
@@ -16,6 +19,7 @@
           chat_event.close();
         }
       }
+      */
       /*
       const message_event = new EventSource("{{ url_for('sse.stream') }}");
       message_event.addEventListener('greeting', (event) => {

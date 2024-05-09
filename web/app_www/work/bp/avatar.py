@@ -43,7 +43,7 @@ def avatar_chat():
     def generate(t):
         i = 0
         while True:
-            yield 'data: {}\n\n'.format(time.time())
+            yield f'id: {time.time()}\nevent: greeting\ndata: {time.time()}\n\n'
             time.sleep(1)
             i += 1
             if i > t:
