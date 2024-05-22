@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>EyesYoga</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='comm/img/icon-32x32.png') }}" type="image/x-icon" />
+    <link  href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header></header>
+    <main></main>
+    <footer></footer>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="module">
+        import { greeter } from "{{ url_for('static', filename='avatar/js/greeter.js') }}";
+    </script>
+    <script type="text/javascript">
+        $(document).ready((e) => {
+            // alert('ok');
+        });
+    </script>
+</body>
+
+</html>

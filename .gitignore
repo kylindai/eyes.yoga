@@ -37,3 +37,6 @@ build/
 *.o
 
 **/package-lock.json
+
+**/node_modules
+

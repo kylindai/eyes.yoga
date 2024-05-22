@@ -5,28 +5,10 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='comm/img/icon-32x32.png') }}" type="image/x-icon" />
   </head>
   <body>
+    <div id="message"></div>
     <script src="{{ url_for('static', filename='avatar/js/greeter.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='avatar/js/chat.mjs') }}">
-
-    </script>
+    <script type="module" src="{{ url_for('static', filename='avatar/js/chat.mjs') }}"></script>
     <script type="text/javascript">
-
-      /*
-      chat_event.onmessage = (event) => {
-        const event_data = JSON.parse(event.data);
-        console.log(event_data);
-        if (count++ > 10) {
-          chat_event.close();
-        }
-      }
-      */
-      /*
-      const message_event = new EventSource("{{ url_for('sse.stream') }}");
-      message_event.addEventListener('greeting', (event) => {
-        const event_data = JSON.parse(event.data);
-        console.log(event_data);
-      })
-      */
     </script>
   </body>
 </html>

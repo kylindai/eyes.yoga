@@ -1,7 +1,7 @@
 // tsc greeter.ts -> greeter.js
 // rollup
 
-class Student {
+export class Student {
     fullName: string;
     constructor(
       public firstName: string,
@@ -12,15 +12,14 @@ class Student {
     }
 }
   
-interface Person {
+export interface Person {
     firstName: string;
     lastName: string;
  }
   
-function greeter(person: Person) {
+export function greeter(person: Person) {
   return "Hello, " + person.firstName + " " + person.lastName;
 }
   
 let user = new Student("Jane", "M.", "User");
-  
 document.body.textContent = greeter(user);

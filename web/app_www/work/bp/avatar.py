@@ -31,6 +31,11 @@ def avatar_test():
     return render_template('avatar/test.html')
 
 
+@bp.route('/avatar/study', methods=['GET'])
+def avatar_study():
+    return render_template('avatar/study.html')
+
+
 @bp.route('/avatar/greeter', methods=['GET'])
 def avatar_greeter():
     return render_template('avatar/greeter.html')
@@ -41,16 +46,18 @@ def avatar_chat():
     result = build_result()
 
     def generate(t):
-        i = 0
+        id = int(time.time())
         while True:
-            yield f'id: {time.time()}\nevent: greeting\ndata: {time.time()}\n\n'
+            data = {'id': id, 'ts': t}
+            yield f'id: {id}\nevent: greeting\ndata: {json.dumps(data)}\n\n'
             time.sleep(1)
-            i += 1
-            if i > t:
+            if t > 10:
                 break
+            t += 1
 
-    return Response(generate(10), mimetype='text/event-stream')
- 
+    return Response(generate(1), mimetype='text/event-stream')
+
+
 @bp.route('/avatar/message')
 def avatar_message():
     sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
