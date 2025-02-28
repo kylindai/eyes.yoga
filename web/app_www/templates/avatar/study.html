@@ -16,11 +16,21 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script type="module">
-        import { greeter } from "{{ url_for('static', filename='avatar/js/greeter.js') }}";
-    </script>
-    <script type="text/javascript">
+        import { Student, greeter } from "{{ url_for('static', filename='avatar/js/greeter.js') }}";
+        // const { greeter } = require("{{ url_for('static', filename='avatar/js/greeter.js') }}");
+
         $(document).ready((e) => {
             // alert('ok');
+            let user = new Student("Jane", "M.", "User");
+            document.body.textContent = greeter(user);
+            // console.log(greeter(user));
+
+            let data = {'OPEN': new Map()};
+            data['OPEN'].set('A', ['a']);
+            data['OPEN'].set('B', ['b']);
+            // console.log(data.keys());
+            console.log(data['OPEN'].size);
+            console.log(data['OPEN']);
         });
     </script>
 </body>

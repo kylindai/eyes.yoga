@@ -1,7 +1,6 @@
-// tsc greeter.ts -> greeter.js
-// rollup
+// $ tsc src/avatar/greeter.ts --outDir static/avatar/js --module esnext --moduleResolution node
 
-export class Student {
+class Student {
     fullName: string;
     constructor(
       public firstName: string,
@@ -12,14 +11,13 @@ export class Student {
     }
 }
   
-export interface Person {
+interface Person {
     firstName: string;
     lastName: string;
  }
   
-export function greeter(person: Person) {
+function greeter(person: Person) {
   return "Hello, " + person.firstName + " " + person.lastName;
 }
   
-let user = new Student("Jane", "M.", "User");
-document.body.textContent = greeter(user);
+export { Student, greeter };

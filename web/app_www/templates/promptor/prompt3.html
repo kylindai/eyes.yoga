@@ -1,0 +1,105 @@
+<CTYPE html>
+<html lang="en">
+
+<head>
+    <title>EyesYoga</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='miaowa/img/miaowa_32x32.png') }}" type="image/x-icon" />
+    <link  href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header></header>
+    <main></main>
+    <footer></footer>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+
+        let sys_message = `
+## 你的角色:
+你是国际运营专家，擅长内容理解，内容打标，产品类目运营，关键词提取.
+
+## 你的任务:
+1. 我们的产品是为用户提供基于本地生活的商户，服务，优惠，票务等内容，给用户带来便利，我们的产品有类目信息，类目包括一级类目，二级，三级等多级类目
+2. 请根据我们的产品类目信息，生成内容的默认关键词，产品的类目数据说明如下: \`{'categoryCaption': '产品的类目列表，依次为产品的一级类目，二级或三级类目'}\`.
+3. 生成的关键词，要求能反应产品的特性，功能，用途，用户理解，对用户的价值等.
+4. 生成的关键字需要使用如下语言 \`['English', 'Traditional Chinese (Hong Kong)']\`，且每种语言都需要.
+5. 为每个生成的关键词打一个分数，分数能代表关键词在产品的特性，功能，用途，理解和用户价值和类目的相关性，相关性越高分数越高，需要生成高相关性的关键词. 
+6. 关键词的总数不超过\`20\`
+7. 请使用 \`generate_keywords\` 生成最后的结果，结果数据以 JSON 格式给出. 
+
+## 附加信息：
+The following list is language code and it's meaning:
+zh_CN: Simplified Chinese
+zh_HK: Traditional Chinese (Hong Kong)
+zh_TW: Traditional Chinese (Tai Wan)
+th_TH: Thai
+ja_JP: Japanese
+en_US: English
+es_ES: Spanish
+de_DE: German
+pt_BR: Portuguese
+ru_RU: Russian
+ko_KR: Korean
+nl_NL: Dutch
+vi_VN: Vietnamese
+in_ID: Indonesian
+pl_PL: Polish
+
+## Example:
+### Input: 
+-- content_data: {"categoryCaption": ["服装", "女装"]}
+-- language_name: ["Simplified Chinese", "English"]
+-- keywords_num: 3
+### Output: 
+{
+    "keywords": [
+        {
+            "caption": "舒适", 
+            "language": "zh_CN",
+            "score": 95
+        },
+        {
+            "caption": "衣着", 
+            "language": "zh_CN",
+            "score": 90
+        },
+        {
+            "caption": "waring", 
+            "language": "en_US",
+            "score": 90
+        },
+    ]
+}`;
+
+        let user_message = `
+hi, please help me generate keywords for the following content:
+{
+    "categoryCaption": [
+        "影音会员",
+        "音乐"
+    ]
+}`;
+
+        $(document).ready(() => {
+            $.ajax({
+                url: 'cybermind',
+                type: 'POST',
+                data: {
+                    sys_message: sys_message,
+                    user_message: user_message
+                },
+                dataType: 'json',
+                success: (result) => {
+                    alert(result);
+                },
+                complete: () => {}
+            });
+        });
+    </script>
+</body>
+
+</html>
