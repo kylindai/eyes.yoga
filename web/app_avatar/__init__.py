@@ -6,7 +6,7 @@ import logging
 
 from flask import Flask, app, session, request, render_template
 from flask_login import login_required, current_user
-from flask_sse import sse 
+# from flask_sse import sse 
 
 from comm import LOG_KV, LOG_IMPORTANT
 from web.work.comm import auth, db, scheduler, login_manager
@@ -69,7 +69,7 @@ def create_app(config_file: str = None):
 
     # blueprint
     app.register_blueprint(avatar.bp)
-    app.register_blueprint(sse, url_prefix='/stream')
+    # app.register_blueprint(sse, url_prefix='/stream')
 
     # scheduler
     # app.config |= job_config
