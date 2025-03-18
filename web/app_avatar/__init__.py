@@ -19,7 +19,7 @@ APP_AUTHOR = 'eyes.yoga@hotmail.com'
 
 def create_app(config_file: str = None):
     # create app
-    instance_path = os.path.abspath("./web/instance/app_www")
+    instance_path = os.path.abspath("./web/instance/app_avatar")
     app = Flask(__name__,
                 instance_path=instance_path,
                 instance_relative_config=True)

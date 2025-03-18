@@ -20,16 +20,16 @@ logger = Logger(app_name)
 def print_help(message: str = None):
     print(f"{app_name} {VERSION} By EyesYoga")
     print("usage: python3 eyes-web.py -d <app_name>")
-    print(" e.g.: python3 eyes-web.py -w app_www")
+    print(" e.g.: python3 eyes-web.py -w app_avatar")
     if message:
         print(message)
 
 
 def run_app(args: List[str]):
     app_name = args[0]
-    if app_name == "app_www":
+    if app_name == "app_avatar":
         try:
-            run_app_www("0.0.0.0", 8081)
+            run_app_avatar("0.0.0.0", 8081)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -39,9 +39,9 @@ def run_app(args: List[str]):
 
 def run_wsgi_app(args: List[str]):
     app_name = args[0]
-    if app_name == "app_www":
+    if app_name == "app_avatar":
         try:
-            run_wsig_app_www("0.0.0.0", 8081)
+            run_wsig_app_avatar("0.0.0.0", 8081)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -49,8 +49,8 @@ def run_wsgi_app(args: List[str]):
         LOG_IMPORTANT(f"WebApp: {app_name} is Unknown !")
 
 
-def run_app_www(host: str, port: int):
-    os.environ["FLASK_APP"] = "app_www"
+def run_app_avatar(host: str, port: int):
+    os.environ["FLASK_APP"] = "app_avatar"
     os.environ["FLASK_ENV"] = "development"
 
     app = app_avatar.create_app()
@@ -68,7 +68,7 @@ def run_app_www(host: str, port: int):
         # socketio.run(app, host=host, port=port, debug=False)
 
 
-def run_wsig_app_www(host: str, port: int):
+def run_wsig_app_avatar(host: str, port: int):
     try:
         app = app_avatar.create_app()
         # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
