@@ -10,7 +10,7 @@ from flask_sse import sse
 
 from comm import LOG_KV, LOG_IMPORTANT
 from web.work.comm import auth, db, scheduler, login_manager
-from web.app_www.work.bp import avatar
+from web.app_avatar.work.bp import avatar
 
 APP_VERSION = '1.0.0'
 APP_COPYRIGHT = '2024.03'

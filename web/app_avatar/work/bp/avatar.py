@@ -16,7 +16,7 @@ from flask_sse import sse
 from comm import Logger, LOG_IMPORTANT, LOG_KV, LOG_ERROR
 
 from web.work.comm import db, login_manager
-from web.app_www.work.comm.utils import build_result, result_success, result_failure
+from web.app_avatar.work.comm.utils import build_result, result_success, result_failure
 
 bp = Blueprint('avatar', __name__)
 

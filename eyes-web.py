@@ -4,7 +4,7 @@ import getopt
 import flask
 import logging
 import traceback
-import web.app_www as app_www
+import web.app_avatar as app_avatar
 
 from typing import List, Dict, Tuple, Any
 from importlib import metadata
@@ -29,7 +29,7 @@ def run_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_www":
         try:
-            run_app_www("0.0.0.0", 9090)
+            run_app_www("0.0.0.0", 8081)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -41,7 +41,7 @@ def run_wsgi_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_www":
         try:
-            run_wsig_app_www("0.0.0.0", 9090)
+            run_wsig_app_www("0.0.0.0", 8081)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -53,7 +53,7 @@ def run_app_www(host: str, port: int):
     os.environ["FLASK_APP"] = "app_www"
     os.environ["FLASK_ENV"] = "development"
 
-    app = app_www.create_app()
+    app = app_avatar.create_app()
     # socketio = SocketIO(app)
 
     debug_mode = 1
@@ -70,7 +70,7 @@ def run_app_www(host: str, port: int):
 
 def run_wsig_app_www(host: str, port: int):
     try:
-        app = app_www.create_app()
+        app = app_avatar.create_app()
         # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
         server = WSGIServer((host, port), app)
         server.serve_forever()
