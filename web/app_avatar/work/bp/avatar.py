@@ -11,7 +11,7 @@ from flask import (
     render_template, send_from_directory, redirect, url_for
 )
 from flask_login import UserMixin, login_user, logout_user, login_required
-from flask_sse import sse
+# from flask_sse import sse
 
 from comm import Logger, LOG_IMPORTANT, LOG_KV, LOG_ERROR
 
@@ -58,7 +58,7 @@ def avatar_chat():
     return Response(generate(1), mimetype='text/event-stream')
 
 
-@bp.route('/avatar/message')
-def avatar_message():
-    sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
-    return "Message sent!"
+# @bp.route('/avatar/message')
+# def avatar_message():
+#     sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
+#     return "Message sent!"
