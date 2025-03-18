@@ -41,18 +41,18 @@ def avatar_greeter():
     return render_template('avatar/greeter.html')
 
 
-@bp.route('/avatar/chat', methods=['GET'])
+@bp.route('/stream/avatar/chat', methods=['GET'])
 def avatar_chat():
     result = build_result()
 
     def generate(t):
-        id = int(time.time())
         while True:
+            id = int(time.time())
             data = {'id': id, 'ts': t}
             yield f'id: {id}\nevent: greeting\ndata: {json.dumps(data)}\n\n'
             time.sleep(1)
-            if t > 10:
-                break
+            # if t > 10:
+            #     break
             t += 1
 
     return Response(generate(1), mimetype='text/event-stream')

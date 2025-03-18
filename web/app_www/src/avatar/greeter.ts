@@ -20,4 +20,4 @@ function greeter(person: Person) {
   return "Hello, " + person.firstName + " " + person.lastName;
 }
   
-export { Student, greeter };
+// export { Student, greeter };
