@@ -29,7 +29,7 @@ def run_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_avatar":
         try:
-            run_app_avatar("0.0.0.0", 8081)
+            run_app_avatar("0.0.0.0", 8090)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -41,7 +41,7 @@ def run_wsgi_app(args: List[str]):
     app_name = args[0]
     if app_name == "app_avatar":
         try:
-            run_wsig_app_avatar("0.0.0.0", 8081)
+            run_wsig_app_avatar("0.0.0.0", 8090)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
