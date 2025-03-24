@@ -38,7 +38,8 @@ def avatar_study():
 
 @bp.route('/avatar/greeter', methods=['GET'])
 def avatar_greeter():
-    return render_template('avatar/greeter.html')
+    sse_host = current_app.config['SSE_HOST']
+    return render_template('avatar/greeter.html', sse_host=sse_host)
 
 
 @bp.route('/stream/avatar/chat', methods=['GET'])
@@ -55,7 +56,10 @@ def avatar_chat():
             #     break
             t += 1
 
-    return Response(generate(1), mimetype='text/event-stream')
+    headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+    return Response(generate(1), headers=headers, mimetype='text/event-stream')
 
 
 # @bp.route('/avatar/message')

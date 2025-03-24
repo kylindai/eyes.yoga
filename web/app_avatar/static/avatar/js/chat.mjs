@@ -1,5 +1,5 @@
 
-const chat_event = new EventSource('/stream/avatar/chat');
+const chat_event = new EventSource('//sse.eyes.yoga/stream/avatar/chat');
 let count = 0;
 chat_event.addEventListener('greeting', (event)=> {
   const event_data = JSON.parse(event.data);
