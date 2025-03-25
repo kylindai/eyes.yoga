@@ -247,7 +247,7 @@ class Logger:
         self._trace = trace
 
         self._logger = logging.getLogger(self._name)
-        self._logger.setLevel(logging.INFO)
+        self._logger.setLevel(logging.ERROR)
 
         # console log handler
         console_log_handler = ConsoleLogHandler(self._name, 
@@ -280,7 +280,7 @@ class Logger:
             self._log(LogLevel.TRACE, trace_left)
 
     def _log(self, log_level: LogLevel, message: str):
-        self._logger.info(message, extra={'LogLevel': log_level})
+        self._logger.error(message, extra={'LogLevel': log_level})
 
     def name(self):
         return self._name
