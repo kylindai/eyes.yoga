@@ -15,6 +15,7 @@ class LoggerTest(BaseTestCase):
 
         logger = Logger(self, log_level=LogLevel.INFO, log_file_name='test.log')
         logger.error("test ...")
-        logger.debug("this is debug info")
+        logger.info("this is a normal info.")
+        logger.debug("this is a debug info.")
 
         assert True

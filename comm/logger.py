@@ -78,7 +78,7 @@ class LogHandler(logging.Handler):
             self._log_level = log_level
 
         def do_filter(self, log_level: LogLevel):
-            if log_level.value[1] <= LogLevel.DEBUG.value[1]:
+            if log_level.value[1] < LogLevel.DEBUG.value[1]:
                 return True
             return log_level.value[1] >= self._log_level.value[1]
 
