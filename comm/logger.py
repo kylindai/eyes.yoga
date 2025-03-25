@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import time
-import atexit
 import shutil
 import asyncio
 import logging
@@ -35,28 +34,23 @@ ANSI_REMOVE_COLOR = "\033[0m"
 
 
 def LOG_PROGRESS(x):
-    print(
-        f"\r{ANSI_LIGHT_PINK}{x}{ANSI_REMOVE_COLOR}", end='')
+    print(f"\r{ANSI_LIGHT_PINK}{x}{ANSI_REMOVE_COLOR}", end='')
 
 
 def LOG_IMPORTANT(x):
-    print(
-        f"{ANSI_LIGHT_PINK}{x}{ANSI_REMOVE_COLOR}")
+    print(f"{ANSI_LIGHT_PINK}{x}{ANSI_REMOVE_COLOR}")
 
 
 def LOG_IGNORE(x):
-    print(
-        f"{ANSI_WEAKEN}{x}{ANSI_REMOVE_COLOR}")
+    print(f"{ANSI_WEAKEN}{x}{ANSI_REMOVE_COLOR}")
 
 
 def LOG_ERROR(x):
-    print(
-        f"{ANSI_RED}{x}{ANSI_REMOVE_COLOR}")
+    print(f"{ANSI_RED}{x}{ANSI_REMOVE_COLOR}")
 
 
 def LOG_CARE(x):
-    print(
-        f"{ANSI_LIGHT_CYAN}{x}{ANSI_REMOVE_COLOR}")
+    print(f"{ANSI_LIGHT_CYAN}{x}{ANSI_REMOVE_COLOR}")
 
 
 def LOG_KV(key, value):
@@ -65,15 +59,15 @@ def LOG_KV(key, value):
 
 
 class LogLevel(Enum):
-    IGNORE = ('IGR', 0, ANSI_WEAKEN)
-    TRACE = ('TRC', 1, ANSI_BLUE)
-    DEBUG = ('DBG', 2, ANSI_GREEN)
-    INFO = ('INF', 3, ANSI_WHITE)
-    CARE = ('CRE', 4, ANSI_LIGHT_CYAN)
-    WARN = ('WRN', 5, ANSI_YELLOW)
-    ALERT = ('ALT', 6, ANSI_LIGHT_PINK)
-    ERROR = ('ERR', 7, ANSI_RED)
-    FATAL = ('FTL', 8, ANSI_RED)
+    IGNORE = ('IGR', 10, ANSI_WEAKEN)
+    TRACE = ('TRC', 20, ANSI_BLUE)
+    DEBUG = ('DBG', 30, ANSI_GREEN)
+    INFO = ('INF', 40, ANSI_WHITE)
+    CARE = ('CRE', 50, ANSI_LIGHT_CYAN)
+    WARN = ('WRN', 60, ANSI_YELLOW)
+    ALERT = ('ALT', 70, ANSI_LIGHT_PINK)
+    ERROR = ('ERR', 80, ANSI_RED)
+    FATAL = ('FTL', 90, ANSI_RED)
 
 
 class LogHandler(logging.Handler):
@@ -85,7 +79,9 @@ class LogHandler(logging.Handler):
             self._log_level = log_level
 
         def do_filter(self, log_level: LogLevel):
-            return log_level.value[1] < self._log_level.value[1]
+            if log_level.value[1] <= LogLevel.DEBUG.value[1]:
+                return True
+            return log_level.value[1] >= self._log_level.value[1]
 
         def filter(self, record):
             log_level = getattr(record, 'LogLevel')
@@ -109,9 +105,6 @@ class LogHandler(logging.Handler):
     def get_filter(self):
         return self._filter
 
-    def _prompt(self) -> str:
-        return f"{datetime.now()}"
-
 
 class ConsoleLogHandler(LogHandler):
 
@@ -120,39 +113,30 @@ class ConsoleLogHandler(LogHandler):
             super().__init__(format)
 
         @staticmethod
-        def do_format(name: str, log_level: LogLevel, message: str) -> str:
+        def do_format(name: str, log_level: LogLevel, created: float, msg: str) -> str:
             color = log_level.value[2]
             level = log_level.value[0]
-            return f"{datetime.now()}: {color}[{level}] {name}: {message}{ANSI_REMOVE_COLOR}"
+            return f"{datetime.fromtimestamp(created)}: {color}[{level}] {name}: {msg}{ANSI_REMOVE_COLOR}"
 
-        def format(self, record: LogRecord) -> Dict:
-            # print(record)
-            # print(record.__dict__)
-            # record.__dict__[]
+        def format(self, record: LogRecord):
             name = getattr(record, 'name')
             log_level = getattr(record, 'LogLevel')
+            created = getattr(record, 'created')
             msg = getattr(record, 'msg')
-            # print("=" * 20)
-            # print(f"【{msg}】")
-            # print("-" * 20)
-            # self._format(name, log_level, msg)
-            # setattr(record, 'tm', datetime.now())
-            setattr(record, 'msg',
-                    ConsoleLogHandler.Formatter.do_format(name, log_level, msg))
 
-    def __init__(self, name: str, log_level: LogLevel = LogLevel.INFO):
+            setattr(record, 'log_msg',
+                    ConsoleLogHandler.Formatter.do_format(name, log_level, created, msg))
+
+    def __init__(self, name: str, log_level: LogLevel):
         super().__init__(name, log_level)
         self.setFormatter(ConsoleLogHandler.Formatter())
 
     def emit(self, record: LogRecord):
         self.format(record)
-        # print(value['msg'])
-        return super().emit(record)
+        print(record.log_msg)
 
-    def log(self, log_level: LogLevel, message: str):
-        if not self.get_filter().do_filter(log_level):
-            print(ConsoleLogHandler.Formatter.do_format(
-                self._name, log_level, message))
+    def close(self):
+        super().close()
 
 
 class FileLogHandler(LogHandler):
@@ -160,39 +144,46 @@ class FileLogHandler(LogHandler):
     _log_file_name = None
     _log_file = None
 
-    _log_queue = asyncio.Queue(maxsize=100)
+    class Formatter(logging.Formatter):
+        def __init__(self, format: str = '%(message)s'):
+            super().__init__(format)
 
-    def __init__(self, name: str, log_level: LogLevel = LogLevel.IGNORE):
+        @staticmethod
+        def do_format(name: str, log_level: LogLevel, created: float, msg: str) -> str:
+            return f"{datetime.fromtimestamp(created)}: [{log_level.value[0]}] {name}: {msg}\n"
+
+        def format(self, record: LogRecord):
+            name = getattr(record, 'name')
+            log_level = getattr(record, 'LogLevel')
+            created = getattr(record, 'created')
+            msg = getattr(record, 'msg')
+
+            setattr(record, 'log_msg',
+                    FileLogHandler.Formatter.do_format(name, log_level, created, msg))
+
+    def __init__(self, name: str, log_level: LogLevel, log_file_name: str):
         super().__init__(name, log_level)
-        atexit.register(self._clearup)
+        self.setFormatter(FileLogHandler.Formatter())
+        self._set_log_file_name(log_file_name)
 
-    def _clearup(self):
-        """ close log file """
+    def emit(self, record: LogRecord):
+        self.format(record)
+
+        if FileLogHandler._log_file is not None:
+            message = record.log_msg
+            try:
+                FileLogHandler._log_file.write(message)
+                FileLogHandler._log_file.flush()
+            except Exception as e:
+                pass
+
+    def close(self):
         if FileLogHandler._log_file is not None:
             FileLogHandler._log_file.close()
             FileLogHandler._back_log_file()
 
     @staticmethod
-    async def _submit_log(log_message: str):
-        await FileLogHandler._log_queue.put(log_message)
-
-    @staticmethod
-    async def _write_log():
-        while True:
-            print("wait log message")
-            log_message = await FileLogHandler._log_queue.get()
-            print("got log message", log_message)
-            if FileLogHandler._log_file is not None:
-                try:
-                    FileLogHandler._log_file.write(log_message)
-                    FileLogHandler._log_file.flush()
-                except Exception as e:
-                    # print(e)
-                    pass
-            FileLogHandler._log_queue.task_done()
-
-    @staticmethod
-    def set_log_file_name(file_name: str = None):
+    def _set_log_file_name(file_name: str = None):
         log_path = os.path.abspath("./log")
         if not os.path.exists(log_path):
             os.makedirs(log_path, exist_ok=True)
@@ -202,7 +193,6 @@ class FileLogHandler(LogHandler):
         try:
             FileLogHandler._log_file = open(
                 FileLogHandler._log_file_name, "w+")
-            # asyncio.create_task(FileLogHandler._write_log())
         except Exception as e:
             print(e)
 
@@ -235,33 +225,17 @@ class FileLogHandler(LogHandler):
             log_bak_path, f"{file_prefix}-{file_date}-{file_seq+1}.log")
         shutil.move(file_old, file_bak)
 
-    def emit(self, record: LogRecord) -> None:
-        return super().emit(record)
-
-    def log(self, log_level: LogLevel, message: str):
-        if not self.get_filter().do_filter(log_level):
-            if FileLogHandler._log_file is not None:
-                try:
-                    level = log_level.value[0]
-                    log_message = f"{self._prompt()}: [{level}] {self._name}: {message}\n"
-                    # asyncio.create_task(FileLogHandler._submit_log(log_message))
-                    FileLogHandler._log_file.write(log_message)
-                    FileLogHandler._log_file.flush()
-                except Exception as e:
-                    # print(e)
-                    pass
-
 
 class Logger:
 
     Level = LogLevel
-    _log_level = LogLevel.INFO
 
     def __init__(self,
                  name: Union[str, object],
                  sub_name: str = None,
-                 trace: bool = True,
-                 log_level: LogLevel = None):
+                 log_level: LogLevel = LogLevel.INFO,
+                 log_file_name: str = None,
+                 trace: bool = True):
         if isinstance(name, str):
             self._name = name
         else:
@@ -270,22 +244,24 @@ class Logger:
         if sub_name is not None:
             self._name = self._name + '.' + sub_name
 
-        if log_level is not None:
-            Logger._log_level = log_level
-        self._log_level = Logger._log_level
+        self._log_level = log_level or LogLevel.INFO
 
         self._trace = trace
 
-        self._handlers = {
-            'console': ConsoleLogHandler(self._name, self._log_level),
-            'file': FileLogHandler(self._name)
-        }
-
         self._logger = logging.getLogger(self._name)
         self._logger.setLevel(logging.INFO)
-        if not self._logger.handlers:
-            self._logger.addHandler(self._handlers['console'])
-            self._logger.addHandler(self._handlers['file'])
+
+        # console log handler
+        console_log_handler = ConsoleLogHandler(self._name, 
+                                                self._log_level)
+        self._logger.addHandler(console_log_handler)
+
+        # file log handler
+        if log_file_name is not None:
+            file_log_handler = FileLogHandler(self._name, 
+                                              LogLevel.IGNORE,
+                                              log_file_name)
+            self._logger.addHandler(file_log_handler)
 
         if self._trace:
             self._start = time.time()
@@ -306,13 +282,7 @@ class Logger:
             self._log(LogLevel.TRACE, trace_left)
 
     def _log(self, log_level: LogLevel, message: str):
-        # self._logger.info(message, extra={'LogLevel': log_level})
-        for _, handler in self._handlers.items():
-            handler.log(log_level, message)
-
-    def set_log_file_name(self, file_name: str):
-        FileLogHandler.set_log_file_name(file_name)
-        return self
+        self._logger.info(message, extra={'LogLevel': log_level})
 
     def name(self):
         return self._name
