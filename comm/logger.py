@@ -54,8 +54,7 @@ def LOG_CARE(x):
 
 
 def LOG_KV(key, value):
-    print(
-        f"{ANSI_YELLOW}{key} = [{ANSI_GREEN}{value}{ANSI_YELLOW}]{ANSI_REMOVE_COLOR}")
+    print(f"{ANSI_YELLOW}{key} = [{ANSI_GREEN}{value}{ANSI_YELLOW}]{ANSI_REMOVE_COLOR}")
 
 
 class LogLevel(Enum):
@@ -170,9 +169,8 @@ class FileLogHandler(LogHandler):
         self.format(record)
 
         if FileLogHandler._log_file is not None:
-            message = record.log_msg
             try:
-                FileLogHandler._log_file.write(message)
+                FileLogHandler._log_file.write(record.log_msg)
                 FileLogHandler._log_file.flush()
             except Exception as e:
                 pass
