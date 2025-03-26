@@ -54,7 +54,8 @@ def LOG_CARE(x):
 
 
 def LOG_KV(key, value):
-    print(f"{ANSI_YELLOW}{key} = [{ANSI_GREEN}{value}{ANSI_YELLOW}]{ANSI_REMOVE_COLOR}")
+    print(
+        f"{ANSI_YELLOW}{key} = [{ANSI_GREEN}{value}{ANSI_YELLOW}]{ANSI_REMOVE_COLOR}")
 
 
 class LogLevel(Enum):
@@ -228,38 +229,39 @@ class Logger:
 
     Level = LogLevel
 
+    _root_name = ''
+    _log_level = LogLevel.INFO
+
     def __init__(self,
                  name: Union[str, object],
                  sub_name: str = None,
                  log_level: LogLevel = LogLevel.INFO,
                  log_file_name: str = None,
-                 trace: bool = True):
+                 trace: bool = False):
         if isinstance(name, str):
+            if not Logger._root_name:
+                Logger._root_name = name
             self._name = name
         else:
             self._name = name.__class__.__name__
 
+        # for sub logger
         if sub_name is not None:
             self._name = self._name + '.' + sub_name
 
-        self._log_level = log_level or LogLevel.INFO
+        if log_level is not None:
+            Logger._log_level = log_level
+        self._log_level = Logger._log_level
 
         self._trace = trace
 
-        self._logger = logging.getLogger(self._name)
+        self._logger = None
+
+        self._logger = logging.getLogger(self._logger_name())
+        # self._logger.propagate = False
         self._logger.setLevel(logging.ERROR)
-
-        # console log handler
-        console_log_handler = ConsoleLogHandler(self._name, 
-                                                self._log_level)
-        self._logger.addHandler(console_log_handler)
-
-        # file log handler
-        if log_file_name is not None:
-            file_log_handler = FileLogHandler(self._name, 
-                                              LogLevel.IGNORE,
-                                              log_file_name)
-            self._logger.addHandler(file_log_handler)
+        # set handler for root logger
+        self._setup_handler(log_file_name)
 
         if self._trace:
             self._start = time.time()
@@ -278,6 +280,37 @@ class Logger:
             else:
                 trace_left = f'>>> cost: {(cost/3600000.0):.3f}h'
             self._log(LogLevel.TRACE, trace_left)
+
+    def _logger_name(self):
+        if Logger._root_name and Logger._root_name != self._name:
+            return f'{Logger._root_name}.{self._name}'
+        else:
+            return self._name
+
+    def _is_root_logger(self):
+        return Logger._root_name == self._name
+
+    def _setup_handler(self, log_file_name):
+        if self._is_root_logger():
+            # check handler
+            has_console_handler, has_file_handler = False, False
+            for handler in self._logger.handlers:
+                if isinstance(handler, ConsoleLogHandler):
+                    has_console_handler = True
+                if isinstance(handler, FileLogHandler):
+                    has_file_handler = True
+
+            # console log handler
+            if not has_console_handler:
+                console_log_handler = ConsoleLogHandler(self._name,
+                                                        self._log_level)
+                self._logger.addHandler(console_log_handler)
+            # file log handler
+            if not has_file_handler:
+                file_log_handler = FileLogHandler(self._name,
+                                                  LogLevel.IGNORE,
+                                                  log_file_name)
+                self._logger.addHandler(file_log_handler)
 
     def _log(self, log_level: LogLevel, message: str):
         self._logger.error(message, extra={'LogLevel': log_level})
