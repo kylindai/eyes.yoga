@@ -22,9 +22,29 @@ from web.app_avatar.work.comm.utils import build_result, result_success, result_
 bp = Blueprint('chat', __name__)
 
 
-@bp.route('/chat')
-def avatar():
-    return render_template("chat/index.html")
+@bp.route('/socketio')
+def chat_socketio():
+    return render_template("chat/socketio.html")
+
+
+@bp.route('/stream/chat', methods=['GET'])
+def chat_stream():
+    result = build_result()
+
+    def generate(t):
+        while True:
+            id = int(time.time())
+            data = {'id': id, 'ts': t}
+            yield f'id: {id}\nevent: greeting\ndata: {json.dumps(data)}\n\n'
+            time.sleep(1)
+            # if t > 10:
+            #     break
+            t += 1
+
+    headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+    return Response(generate(1), headers=headers, mimetype='text/event-stream')
 
 
 @socketio.on('connect')

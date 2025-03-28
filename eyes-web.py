@@ -4,15 +4,16 @@ import getopt
 import flask
 import logging
 import traceback
-import web.app_avatar as app_avatar
 
 from typing import List, Dict, Tuple, Any
 from importlib import metadata
-from flask_socketio import SocketIO
 from gevent.pywsgi import WSGIServer
 # from geventwebsocket.handler import WebSocketHandler
+from flask_socketio import SocketIO
 
 from comm import VERSION, Logger, LOG_KV, LOG_IMPORTANT
+from web.app_avatar import create_app as create_app_avatar
+from web.app_chat import create_app as create_app_chat
 
 app_name = "Eyes-Web"
 logger = Logger(app_name)
@@ -26,11 +27,17 @@ def print_help(message: str = None):
         print(message)
 
 
-def run_app(args: List[str]):
+def run_app(args: List[str], port=8090):
     app_name = args[0]
     if app_name == "app_avatar":
         try:
-            run_app_avatar("0.0.0.0", 8090)
+            run_app_avatar("0.0.0.0", port)
+        except Exception as e:
+            logger.error(e)
+            print(traceback.format_exc())
+    elif app_name == "app_chat":
+        try:
+            run_app_chat("0.0.0.0", port)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -38,11 +45,17 @@ def run_app(args: List[str]):
         LOG_IMPORTANT(f"WebApp: {app_name} is Unknown !")
 
 
-def run_wsgi_app(args: List[str]):
+def run_wsgi_app(args: List[str], port=8090):
     app_name = args[0]
     if app_name == "app_avatar":
         try:
-            run_wsig_app_avatar("0.0.0.0", 8090)
+            run_wsig_app_avatar("0.0.0.0", port)
+        except Exception as e:
+            logger.error(e)
+            print(traceback.format_exc())
+    elif app_name == "app_chat":
+        try:
+            run_wsig_app_chat("0.0.0.0", port)
         except Exception as e:
             logger.error(e)
             print(traceback.format_exc())
@@ -54,8 +67,26 @@ def run_app_avatar(host: str, port: int):
     os.environ["FLASK_APP"] = "app_avatar"
     os.environ["FLASK_ENV"] = "development"
 
-    app = app_avatar.create_app()
-    socketio = SocketIO(app)
+    app = create_app_avatar()
+
+    debug_mode = 1
+    if debug_mode:
+        print(' * DEBUG mode')
+        app.run(host=host, port=port, debug=True,
+                use_debugger=False, use_reloader=False)
+        # socketio.run(app, host=host, port=port, debug=True, use_reloader=False)
+    else:
+        print(' * NON-DEBUG mode')
+        app.run(host=host, port=port, debug=False)
+        # socketio.run(app, host=host, port=port, debug=False)
+
+
+def run_app_chat(host: str, port: int):
+    os.environ["FLASK_APP"] = "app_chat"
+    os.environ["FLASK_ENV"] = "development"
+
+    app = create_app_chat()
+    # socketio = SocketIO(app)
 
     debug_mode = 1
     if debug_mode:
@@ -71,7 +102,18 @@ def run_app_avatar(host: str, port: int):
 
 def run_wsig_app_avatar(host: str, port: int):
     try:
-        app = app_avatar.create_app()
+        app = create_app_avatar()
+        # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
+        server = WSGIServer((host, port), app)
+        server.serve_forever()
+    except Exception as e:
+        logger.error(e)
+        print(traceback.format_exc())
+
+
+def run_wsig_app_chat(host: str, port: int):
+    try:
+        app = create_app_chat()
         # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
         server = WSGIServer((host, port), app)
         server.serve_forever()

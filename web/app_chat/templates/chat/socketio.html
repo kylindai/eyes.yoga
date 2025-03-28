@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Flask-SocketIO Example</title>
-    <!-- 引入 Socket.IO 客户端库 -->
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='comm/js/socket.io-4.7.4.min.js') }}"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+
         #messages {
             list-style-type: none;
             padding: 0;
         }
+
         #messages li {
             background: #f0f0f0;
             margin: 5px 0;
@@ -22,37 +24,34 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Flask-SocketIO Real-Time Communication</h1>
 
-    <!-- 显示消息的列表 -->
     <ul id="messages"></ul>
 
-    <!-- 发送消息的输入框 -->
     <input type="text" id="messageInput" placeholder="Type a message..." />
     <button onclick="sendMessage()">Send</button>
 
     <script>
-        // 连接到服务器
         const socket = io();
 
-        // 监听服务器推送的消息
-        socket.on('server_response', function(data) {
+        socket.on('server_response', function (data) {
             const messages = document.getElementById('messages');
             const message = document.createElement('li');
             message.textContent = data.data;
             messages.appendChild(message);
         });
 
-        // 发送消息到服务器
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (message) {
                 socket.emit('client_message', { data: message });
-                input.value = '';  // 清空输入框
+                input.value = '';  
             }
         }
     </script>
 </body>
+
 </html>
