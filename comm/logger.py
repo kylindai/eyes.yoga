@@ -306,7 +306,7 @@ class Logger:
                                                         self._log_level)
                 self._logger.addHandler(console_log_handler)
             # file log handler
-            if not has_file_handler:
+            if log_file_name and not has_file_handler:
                 file_log_handler = FileLogHandler(self._name,
                                                   LogLevel.IGNORE,
                                                   log_file_name)
