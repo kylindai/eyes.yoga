@@ -27,6 +27,12 @@ def chat_socketio():
     return render_template("chat/socketio.html")
 
 
+@bp.route('/sse')
+def chat_sse():
+    sse_host = current_app.config.get('SSE_HOST')
+    return render_template("chat/sse.html", sse_host=sse_host)
+
+
 @bp.route('/stream/chat', methods=['GET'])
 def chat_stream():
     result = build_result()

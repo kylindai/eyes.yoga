@@ -1,7 +1,7 @@
 
-const chat_event = new EventSource('//sse.eyes.yoga/stream/avatar/chat');
+const chat_event = new EventSource('//sse.eyes.yoga/stream/chat');
 let count = 0;
-chat_event.addEventListener('greeting', (event)=> {
+chat_event.addEventListener('greeting', (event) => {
   const event_data = JSON.parse(event.data);
   console.log(event_data);
   if (event_data.ts > 10) {

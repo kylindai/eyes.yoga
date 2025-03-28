@@ -9,11 +9,10 @@ from typing import List, Dict, Tuple, Any
 from importlib import metadata
 from gevent.pywsgi import WSGIServer
 # from geventwebsocket.handler import WebSocketHandler
-from flask_socketio import SocketIO
 
 from comm import VERSION, Logger, LOG_KV, LOG_IMPORTANT
-from web.app_avatar import create_app as create_app_avatar
-from web.app_chat import create_app as create_app_chat
+from web.app_avatar import create_avatar_app
+from web.app_chat import create_chat_app, run_chat_app
 
 app_name = "Eyes-Web"
 logger = Logger(app_name)
@@ -67,42 +66,29 @@ def run_app_avatar(host: str, port: int):
     os.environ["FLASK_APP"] = "app_avatar"
     os.environ["FLASK_ENV"] = "development"
 
-    app = create_app_avatar()
+    app = create_avatar_app()
 
     debug_mode = 1
     if debug_mode:
         print(' * DEBUG mode')
         app.run(host=host, port=port, debug=True,
                 use_debugger=False, use_reloader=False)
-        # socketio.run(app, host=host, port=port, debug=True, use_reloader=False)
     else:
         print(' * NON-DEBUG mode')
         app.run(host=host, port=port, debug=False)
-        # socketio.run(app, host=host, port=port, debug=False)
 
 
 def run_app_chat(host: str, port: int):
     os.environ["FLASK_APP"] = "app_chat"
     os.environ["FLASK_ENV"] = "development"
 
-    app = create_app_chat()
-    # socketio = SocketIO(app)
-
-    debug_mode = 1
-    if debug_mode:
-        print(' * DEBUG mode')
-        app.run(host=host, port=port, debug=True,
-                use_debugger=False, use_reloader=False)
-        # socketio.run(app, host=host, port=port, debug=True, use_reloader=False)
-    else:
-        print(' * NON-DEBUG mode')
-        app.run(host=host, port=port, debug=False)
-        # socketio.run(app, host=host, port=port, debug=False)
+    app = create_chat_app()
+    run_chat_app(app, host, port, socketio=False, debug_mode=True)
 
 
 def run_wsig_app_avatar(host: str, port: int):
     try:
-        app = create_app_avatar()
+        app = create_avatar_app()
         # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
         server = WSGIServer((host, port), app)
         server.serve_forever()
@@ -113,7 +99,7 @@ def run_wsig_app_avatar(host: str, port: int):
 
 def run_wsig_app_chat(host: str, port: int):
     try:
-        app = create_app_chat()
+        app = create_chat_app()
         # server = WSGIServer((host, port), app, handler_class=WebSocketHandler)
         server = WSGIServer((host, port), app)
         server.serve_forever()

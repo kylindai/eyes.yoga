@@ -8,7 +8,7 @@ from flask import Flask, app, session, request, render_template
 from flask_login import login_required, current_user
 # from flask_sse import sse
 
-from comm import LOG_KV, LOG_IMPORTANT
+from comm import LOG_KV, LOG_IMPORTANT, LOG_CARE
 from web.work.comm import auth, db, scheduler, login_manager, socketio
 from web.app_chat.work.bp import chat
 
@@ -17,7 +17,7 @@ APP_COPYRIGHT = '2024.03'
 APP_AUTHOR = 'eyes.yoga@hotmail.com'
 
 
-def create_app(config_file: str = None):
+def create_chat_app(config_file: str = None):
     # create app
     instance_path = os.path.abspath("./web/instance/app_chat")
     app = Flask(__name__,
@@ -70,25 +70,33 @@ def create_app(config_file: str = None):
     # login_manager.init_app(app)
     # login_manager.login_view = 'user.user_login'
 
-    socketio.init_app(app)
-
     return app
 
 
-def run_app(app, host: str, port: int, debug_mode=True):
+def run_chat_app(app, host: str, port: int, socketio=False, debug_mode=True):
+
+    if socketio:
+        socketio.init_app(app)
+
     if debug_mode:
         print(' * DEBUG mode')
-        # app.run(host=host, port=port, debug=True,
-        #         use_debugger=False, use_reloader=False)
-        socketio.run(app, host=host, port=port, debug=True, use_reloader=False)
+        if socketio:
+            socketio.run(app, host=host, port=port,
+                         debug=True, use_reloader=False)
+        else:
+            app.run(host=host, port=port, debug=True,
+                    use_debugger=False, use_reloader=False)
     else:
         print(' * NON-DEBUG mode')
-        # app.run(host=host, port=port, debug=False)
-        socketio.run(app, host=host, port=port, debug=False)
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=False)
+        else:
+            app.run(host=host, port=port, debug=False)
 
 
 @atexit.register
 def exit_app():
+    LOG_IMPORTANT("\nExit ChatApp, bye~")
     # if scheduler.state:
     #     scheduler.shutdown()
     pass

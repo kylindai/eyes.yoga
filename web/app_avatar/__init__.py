@@ -17,7 +17,7 @@ APP_COPYRIGHT = '2024.03'
 APP_AUTHOR = 'eyes.yoga@hotmail.com'
 
 
-def create_app(config_file: str = None):
+def create_avatar_app(config_file: str = None):
     # create app
     instance_path = os.path.abspath("./web/instance/app_avatar")
     app = Flask(__name__,
@@ -71,13 +71,16 @@ def create_app(config_file: str = None):
     # login_manager.init_app(app)
     # login_manager.login_view = 'user.user_login'
 
-    socketio.init_app(app)
-
     return app
+
+
+def run_chat_app():
+    pass
 
 
 @atexit.register
 def exit_app():
+    # LOG_IMPORTANT("\nExit AvatarApp, bye~")
     # if scheduler.state:
     #     scheduler.shutdown()
     pass
