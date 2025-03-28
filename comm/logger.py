@@ -239,15 +239,12 @@ class Logger:
                  log_file_name: str = None,
                  trace: bool = False):
         if isinstance(name, str):
+            if not Logger._root_name:
+                Logger._root_name = name
             self._name = name
         else:
             self._name = name.__class__.__name__
 
-        if not Logger._root_name:
-            Logger._root_name = name
-
-        print(Logger._root_name)
-        
         # for sub logger
         if sub_name is not None:
             self._name = self._name + '.' + sub_name

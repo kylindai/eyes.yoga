@@ -29,6 +29,9 @@ def create_chat_app(config_file: str = None):
     # ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
+    # register exit app
+    atexit.register(exit_app)
+
     # setup logger
     setup_logger(app)
 
@@ -94,7 +97,6 @@ def run_chat_app(app, host: str, port: int, socketio=False, debug_mode=True):
             app.run(host=host, port=port, debug=False)
 
 
-@atexit.register
 def exit_app():
     LOG_IMPORTANT("\nExit ChatApp, bye~")
     # if scheduler.state:

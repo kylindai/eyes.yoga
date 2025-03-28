@@ -8,16 +8,52 @@
 
 <body>
     <div id="message">sse_host = {{ sse_host }}</div>
+
+    <button id="test_send" name="test_send">test_action</button>
+    <button id="start_stream" name="start_stream">start_stream</button>
+    <button id="stop_stream" name="stop_stream">stop_stream</button>
+
+    <script src="{{ url_for('static', filename='comm/js/jquery-3.7.1.min.js' )}}"></script>
     <script type="text/javascript">
-        const chat_event = new EventSource('//{{ sse_host }}/stream/chat');
-        let count = 0;
-        chat_event.addEventListener('greeting', (event) => {
-            const event_data = JSON.parse(event.data);
-            console.log(event_data);
-            if (event_data.ts > 10) {
-                chat_event.close();
+
+        let chat_event = undefined;
+
+        $('#test_send').click((e) => {
+            $.ajax({
+                url: '/send',
+                type: 'POST',
+                data: {
+                    client_id: '123'
+                },
+                dataType: 'json',
+                success: (result) => {
+                    console.log(result);
+                },
+                complete: () => { }
+            });
+        });
+
+        $('#start_stream').click((e) => {
+            if (chat_event == undefined) {
+                chat_event = new EventSource('//{{ sse_host }}/stream/chat?client_id=123');
+                let count = 0;
+                chat_event.addEventListener('greeting', (event) => {
+                    const event_data = JSON.parse(event.data);
+                    console.log(event_data);
+                    if (event_data.ts > 10) {
+                        // chat_event.close();
+                    }
+                });
             }
         });
+
+        $('#stop_stream').click((e) => {
+            if (chat_event) {
+                chat_event.close();
+                chat_event = undefined;
+            }
+        });
+
     </script>
 </body>
 
