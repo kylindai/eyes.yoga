@@ -9,8 +9,8 @@ from flask_login import login_required, current_user
 # from flask_sse import sse 
 
 from comm import LOG_KV, LOG_IMPORTANT
-from web.work.comm import auth, db, scheduler, login_manager
-from web.app_avatar.work.bp import avatar
+from web.work.comm import auth, db, scheduler, login_manager, socketio
+from web.app_avatar.work.bp import avatar, chat
 
 APP_VERSION = '1.0.0'
 APP_COPYRIGHT = '2024.03'
@@ -69,6 +69,7 @@ def create_app(config_file: str = None):
 
     # blueprint
     app.register_blueprint(avatar.bp)
+    app.register_blueprint(chat.bp)
     # app.register_blueprint(sse, url_prefix='/stream')
 
     # scheduler
@@ -79,6 +80,8 @@ def create_app(config_file: str = None):
     # login
     # login_manager.init_app(app)
     # login_manager.login_view = 'user.user_login'
+   
+    socketio.init_app(app)
 
     return app
 

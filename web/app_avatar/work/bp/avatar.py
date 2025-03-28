@@ -11,11 +11,12 @@ from flask import (
     render_template, send_from_directory, redirect, url_for
 )
 from flask_login import UserMixin, login_user, logout_user, login_required
+from flask_socketio import SocketIO, emit
 # from flask_sse import sse
 
 from comm import Logger, LOG_IMPORTANT, LOG_KV, LOG_ERROR
 
-from web.work.comm import db, login_manager
+from web.work.comm import db, login_manager, socketio
 from web.app_avatar.work.comm.utils import build_result, result_success, result_failure
 
 bp = Blueprint('avatar', __name__)
@@ -66,3 +67,13 @@ def avatar_chat():
 # def avatar_message():
 #     sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
 #     return "Message sent!"
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+    emit('server_response', {'data': 'Welcome to the WebSocket server!'})
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')

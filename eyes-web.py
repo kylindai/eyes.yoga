@@ -8,6 +8,7 @@ import web.app_avatar as app_avatar
 
 from typing import List, Dict, Tuple, Any
 from importlib import metadata
+from flask_socketio import SocketIO
 from gevent.pywsgi import WSGIServer
 # from geventwebsocket.handler import WebSocketHandler
 
@@ -54,7 +55,7 @@ def run_app_avatar(host: str, port: int):
     os.environ["FLASK_ENV"] = "development"
 
     app = app_avatar.create_app()
-    # socketio = SocketIO(app)
+    socketio = SocketIO(app)
 
     debug_mode = 1
     if debug_mode:
