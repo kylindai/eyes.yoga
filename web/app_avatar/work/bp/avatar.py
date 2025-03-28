@@ -43,37 +43,7 @@ def avatar_greeter():
     return render_template('avatar/greeter.html', sse_host=sse_host)
 
 
-@bp.route('/stream/avatar/chat', methods=['GET'])
-def avatar_chat():
-    result = build_result()
-
-    def generate(t):
-        while True:
-            id = int(time.time())
-            data = {'id': id, 'ts': t}
-            yield f'id: {id}\nevent: greeting\ndata: {json.dumps(data)}\n\n'
-            time.sleep(1)
-            # if t > 10:
-            #     break
-            t += 1
-
-    headers = {
-        'Access-Control-Allow-Origin': '*'
-    }
-    return Response(generate(1), headers=headers, mimetype='text/event-stream')
-
-
 # @bp.route('/avatar/message')
 # def avatar_message():
 #     sse.publish({"message": f"Hello! {time.time()}"}, type='greeting')
 #     return "Message sent!"
-
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-    emit('server_response', {'data': 'Welcome to the WebSocket server!'})
-
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('Client disconnected')

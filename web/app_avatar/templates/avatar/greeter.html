@@ -1,26 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <title>TypeScript Greeter</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='comm/img/icon-32x32.png') }}" type="image/x-icon" />
-  </head>
-  <body>
-    {% set sse_host1 = 'dev.eyes.yoga' %}
-    <div id="message">sse_host = {{ sse_host }}</div>
+</head>
+
+<body>
+    <div id="message">avatar: sse_host = {{ sse_host }}</div>
     <script src="{{ url_for('static', filename='avatar/js/greeter.js') }}"></script>
     <!--
     <script type="module" src="{{ url_for('static', filename='avatar/js/chat.mjs') }}"></script>
     -->
-    <script type="text/javascript">
-      const chat_event = new EventSource('//{{ sse_host }}/stream/avatar/chat');
-      let count = 0;
-      chat_event.addEventListener('greeting', (event)=> {
-        const event_data = JSON.parse(event.data);
-        console.log(event_data);
-        if (event_data.ts > 10) {
-          chat_event.close();
-        }
-      });
-  </script>
-  </body>
+    <script type="text/javascript"></script>
+</body>
+
 </html>
